@@ -66,20 +66,23 @@ public:
         }
 
         // load mesh
+        ROS_INFO("PCL version: %d.%d.%d", PCL_MAJOR_VERSION, PCL_MINOR_VERSION, PCL_REVISION_VERSION);
+        pcl::console::setVerbosityLevel(pcl::console::L_DEBUG);
+
 #if PCL_MINOR_VERSION < 10
-        bool loaded_mesh = pcl::io::loadPolygonFileOBJ(path_, pclMesh);
+        int loaded_mesh = pcl::io::loadPolygonFileOBJ(path_, pclMesh);
 #else
-        bool loaded_mesh = pcl::io::loadOBJFile(path_, pclMesh);
+        int loaded_mesh = pcl::io::loadOBJFile(path_, pclMesh);
 #endif
-        if (loaded_mesh)
+        if (loaded_mesh == 0)
         {
             ROS_INFO("loaded OBJ file (%d polygons)", (int)pclMesh.polygons.size());
             pcl_conversions::fromPCL(pclMesh, srv.request.input_mesh);
         }
         else
         {
-            ROS_ERROR("could not load OBJ file");
-            return;
+            ROS_ERROR_STREAM("could not load OBJ file from " << path_);
+            // return;
         }
 
         // load triangle labels (a.k.a. area types)
